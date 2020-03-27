@@ -29,6 +29,7 @@ dependencies:
   provider: ^4.0.1
   exif: ^1.0.2
   geoflutterfire: ^2.1.0
+  multi_image_picker: ^4.6.4
 
 dev_dependencies:
   flutter_test:
