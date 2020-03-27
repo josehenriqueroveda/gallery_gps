@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_absolute_path/flutter_absolute_path.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
+import 'package:http/http.dart';
 import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as pPath;
@@ -30,25 +32,35 @@ class _TakePicScreenState extends State<TakePicScreen> {
 
     print(resultList);
     for (Asset imageFile in resultList) {
+      File myFile;
       Metadata imgInfo = await imageFile.metadata;
       double latitudeImg = imgInfo.gps.gpsLatitude;
       double longitudeImg = imgInfo.gps.gpsLongitude;
 
       print(
-          'Coordenadas da foto: ====> LAT: $latitudeImg // LNG: $longitudeImg');
+          'Coordenadas da foto: ====> LAT: -$latitudeImg // LNG: -$longitudeImg');
 
-      // Now this one is to create a file for each image to save in another directory
-      //read and write
-      var imgBytes = imageFile.getByteData();
-      
+      var filePath =
+          await FlutterAbsolutePath.getAbsolutePath(imageFile.identifier);
+      myFile = File(filePath);
+
+      final appDir = await pPath.getApplicationDocumentsDirectory();
+      final fileName = path.basename(myFile.path);
+      final savedImage = await myFile.copy('${appDir.path}/$fileName');
+
+      var _imageToStore = Picture(picName: savedImage);
+      _storeImage() {
+        Provider.of<Pictures>(context, listen: false).storeImage(_imageToStore);
+      }
+      _storeImage();
     }
   }
 
   Future<void> writeToFile(ByteData data, String path) {
-  final buffer = data.buffer;
-  return new File(path).writeAsBytes(
-      buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
-}
+    final buffer = data.buffer;
+    return new File(path).writeAsBytes(
+        buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
+  }
 
   // This block is for pick only one image and show informations.
 
